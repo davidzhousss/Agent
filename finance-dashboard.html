@@ -1,0 +1,832 @@
+<title>SSS Finance Dashboard</title>
+<style>
+:root {
+  --bg:#F1F3F9;--sur:#FFFFFF;--sur2:#EAECF5;--bdr:#D8DCF0;--bdr2:#C2C8E4;
+  --t1:#1A1D34;--t2:#4E5479;--t3:#8D93B5;
+  --acc:#1847A0;--acc-s:#E2EAF8;
+  --g:#0E7044;--g-bg:#E2F2EA;
+  --a:#A85A00;--a-bg:#FEF0DA;
+  --r:#B81A28;--r-bg:#FCEAEC;
+  --sh:0 1px 2px rgba(26,29,52,.07),0 1px 1px rgba(26,29,52,.04);
+  --rad:3px;
+}
+@media(prefers-color-scheme:dark){:root{
+  --bg:#0B0E1C;--sur:#131626;--sur2:#1A1E30;--bdr:#252944;--bdr2:#32375A;
+  --t1:#E0E3F6;--t2:#818AB0;--t3:#484E74;
+  --acc:#4E80D8;--acc-s:#172048;
+  --g:#28A868;--g-bg:#082A1A;
+  --a:#CC8020;--a-bg:#261800;
+  --r:#E0303E;--r-bg:#280C10;
+  --sh:0 1px 3px rgba(0,0,0,.5);
+}}
+:root[data-theme=dark]{
+  --bg:#0B0E1C;--sur:#131626;--sur2:#1A1E30;--bdr:#252944;--bdr2:#32375A;
+  --t1:#E0E3F6;--t2:#818AB0;--t3:#484E74;
+  --acc:#4E80D8;--acc-s:#172048;
+  --g:#28A868;--g-bg:#082A1A;
+  --a:#CC8020;--a-bg:#261800;
+  --r:#E0303E;--r-bg:#280C10;
+  --sh:0 1px 3px rgba(0,0,0,.5);
+}
+:root[data-theme=light]{
+  --bg:#F1F3F9;--sur:#FFFFFF;--sur2:#EAECF5;--bdr:#D8DCF0;--bdr2:#C2C8E4;
+  --t1:#1A1D34;--t2:#4E5479;--t3:#8D93B5;
+  --acc:#1847A0;--acc-s:#E2EAF8;
+  --g:#0E7044;--g-bg:#E2F2EA;
+  --a:#A85A00;--a-bg:#FEF0DA;
+  --r:#B81A28;--r-bg:#FCEAEC;
+  --sh:0 1px 2px rgba(26,29,52,.07),0 1px 1px rgba(26,29,52,.04);
+}
+*,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
+body{font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",system-ui,sans-serif;background:var(--bg);color:var(--t1);font-size:13px;line-height:1.5}
+
+/* TOP BAR */
+.topbar{position:sticky;top:0;z-index:50;background:var(--sur);border-bottom:1px solid var(--bdr);padding:0 20px;height:44px;display:flex;align-items:center;justify-content:space-between}
+.org{font-size:13px;font-weight:600;letter-spacing:-.01em}
+.org .sep{color:var(--t3);font-weight:400;margin:0 8px}
+.org .tag{color:var(--acc)}
+.topbar-r{font-size:11px;color:var(--t3);display:flex;align-items:center;gap:14px}
+.ldot{display:inline-block;width:6px;height:6px;border-radius:50%;background:var(--g);margin-right:5px;vertical-align:middle}
+
+/* TAB NAV */
+.tabnav{background:var(--sur);border-bottom:1px solid var(--bdr);padding:0 20px;display:flex}
+.tab{padding:0 16px;height:38px;font-size:12px;font-weight:500;letter-spacing:.02em;color:var(--t2);background:none;border:none;border-bottom:2px solid transparent;margin-bottom:-1px;cursor:pointer;transition:color .1s;display:flex;align-items:center}
+.tab:hover{color:var(--t1)}
+.tab.on{color:var(--acc);border-bottom-color:var(--acc)}
+.tab:focus-visible{outline:2px solid var(--acc);outline-offset:2px}
+
+/* PANELS */
+.panel{display:none;padding:18px 20px 40px;max-width:1440px;margin:0 auto}
+.panel.on{display:block}
+
+.pbar{display:flex;align-items:center;justify-content:space-between;margin-bottom:16px;flex-wrap:wrap;gap:6px}
+.plbl{font-size:10px;font-weight:700;text-transform:uppercase;letter-spacing:.1em;color:var(--t3)}
+.pnote{font-size:10px;color:var(--t3);font-style:italic}
+
+/* KPI STRIP */
+.krow{display:grid;grid-template-columns:repeat(5,1fr);gap:10px;margin-bottom:16px}
+.kpi{background:var(--sur);border:1px solid var(--bdr);border-top:3px solid var(--bdr2);border-radius:var(--rad);padding:14px 14px 12px;box-shadow:var(--sh)}
+.kpi.ok{border-top-color:var(--g)}.kpi.warn{border-top-color:var(--a)}.kpi.crit{border-top-color:var(--r)}.kpi.neu{border-top-color:var(--acc)}
+.kl{font-size:9px;font-weight:700;text-transform:uppercase;letter-spacing:.1em;color:var(--t3);margin-bottom:7px}
+.kv{font-size:21px;font-weight:700;font-variant-numeric:tabular-nums;letter-spacing:-.035em;color:var(--t1);line-height:1;margin-bottom:5px}
+.kv.dim{font-size:13px;padding-top:4px;color:var(--t3)}
+.ks{font-size:10px;color:var(--t3);font-variant-numeric:tabular-nums}
+.ks .r{color:var(--r);font-weight:600}.ks .g{color:var(--g);font-weight:600}.ks .a{color:var(--a);font-weight:600}
+
+/* GRIDS */
+.g2{display:grid;grid-template-columns:1fr 1fr;gap:12px}
+.g31{display:grid;grid-template-columns:2fr 1fr;gap:12px}
+.rows{display:flex;flex-direction:column;gap:12px}
+.gap{height:12px}
+
+/* CARDS */
+.card{background:var(--sur);border:1px solid var(--bdr);border-radius:var(--rad);box-shadow:var(--sh);overflow:hidden}
+.ch{padding:10px 14px;border-bottom:1px solid var(--bdr);display:flex;align-items:baseline;justify-content:space-between;gap:12px}
+.ct{font-size:10px;font-weight:700;text-transform:uppercase;letter-spacing:.09em;color:var(--t2)}
+.cv{font-size:15px;font-weight:700;font-variant-numeric:tabular-nums;letter-spacing:-.025em;color:var(--t1)}
+.cv.r{color:var(--r)}
+.cb{padding:14px}
+
+/* STATS */
+.stats{display:grid;grid-template-columns:repeat(auto-fit,minmax(90px,1fr));gap:10px;margin-bottom:14px}
+.s{display:flex;flex-direction:column;gap:2px}
+.sl{font-size:9px;font-weight:700;text-transform:uppercase;letter-spacing:.08em;color:var(--t3)}
+.sv{font-size:17px;font-weight:700;font-variant-numeric:tabular-nums;letter-spacing:-.025em}
+.sv.r{color:var(--r)}.sv.g{color:var(--g)}.sv.a{color:var(--a)}
+.ss{font-size:10px;color:var(--t3)}
+
+/* DIVIDER */
+.div{height:1px;background:var(--bdr);margin:12px 0}
+
+/* TABLE */
+table{width:100%;border-collapse:collapse}
+thead th{padding:5px 8px;font-size:9px;font-weight:700;text-transform:uppercase;letter-spacing:.08em;color:var(--t3);border-bottom:1px solid var(--bdr);background:var(--sur2);white-space:nowrap}
+th,td{text-align:left}
+th:not(:first-child),td:not(:first-child){text-align:right}
+tbody td{padding:8px;font-size:11px;border-bottom:1px solid var(--bdr);color:var(--t1);font-variant-numeric:tabular-nums}
+tbody tr:last-child td{border-bottom:none}
+tbody tr:hover td{background:var(--sur2)}
+tfoot td{padding:8px;font-size:11px;font-variant-numeric:tabular-nums;border-top:2px solid var(--bdr2);font-weight:700;color:var(--t1)}
+
+/* BADGES */
+.badge{display:inline-block;padding:1px 6px;border-radius:2px;font-size:9px;font-weight:700;letter-spacing:.04em;text-transform:uppercase;white-space:nowrap}
+.br{background:var(--r-bg);color:var(--r)}.ba{background:var(--a-bg);color:var(--a)}.bg{background:var(--g-bg);color:var(--g)}.bn{background:var(--sur2);color:var(--t2)}
+
+/* AGING */
+.age-track{display:flex;height:7px;border-radius:3px;overflow:hidden;gap:2px;margin:10px 0 7px}
+.age-seg{height:100%}
+.age-leg{display:flex;gap:14px;flex-wrap:wrap;margin-bottom:10px}
+.age-item{display:flex;align-items:center;gap:4px;font-size:10px;color:var(--t2)}
+.age-dot{width:8px;height:8px;border-radius:1px;flex-shrink:0}
+
+/* HORIZ BARS */
+.hbar{margin-bottom:9px}
+.hbar-row{display:flex;justify-content:space-between;margin-bottom:3px}
+.hbar-name{font-size:11px;color:var(--t2)}
+.hbar-amt{font-size:11px;font-variant-numeric:tabular-nums;color:var(--t1);font-weight:600}
+.hbar-pct{font-size:10px;color:var(--t3);margin-left:5px;font-weight:400}
+.hbar-track{height:4px;background:var(--sur2);border-radius:2px;overflow:hidden}
+.hbar-fill{height:100%;border-radius:2px;background:var(--acc)}
+
+/* P&L ROWS */
+.pr{display:flex;justify-content:space-between;align-items:baseline;padding:7px 0;border-bottom:1px solid var(--bdr)}
+.pr:last-child{border-bottom:none}
+.pl{font-size:12px;color:var(--t2)}
+.pv{font-size:12px;font-weight:600;font-variant-numeric:tabular-nums}
+.pv.r{color:var(--r)}.pv.g{color:var(--g)}
+.pr.h .pl{font-weight:700;color:var(--t1)}
+.pr.h .pv{font-size:15px}
+.pr.ind .pl{padding-left:12px;font-size:11px}
+.pr.note .pl,.pr.note .pv{font-size:10px;color:var(--t3)}
+
+/* INFO ROWS */
+.irow{display:flex;justify-content:space-between;align-items:baseline;padding:8px 10px;background:var(--sur2);border-radius:var(--rad);margin-bottom:6px}
+.irow:last-child{margin-bottom:0}
+.il{font-size:11px;color:var(--t2)}
+.iv{font-size:14px;font-weight:700;font-variant-numeric:tabular-nums;letter-spacing:-.02em}
+
+/* NOTICE */
+.notice{background:var(--sur2);border:1px solid var(--bdr);border-radius:var(--rad);padding:11px 13px;font-size:11px;color:var(--t2);line-height:1.6}
+.notice strong{color:var(--t1)}
+
+/* QUARTER PROGRESS */
+.qtrack{height:6px;background:var(--sur2);border-radius:3px;overflow:hidden;margin:6px 0 4px}
+.qfill{height:100%;background:var(--acc);border-radius:3px}
+.qmeta{font-size:10px;color:var(--t3)}
+
+/* COMMENTARY */
+.comm{border-top:1px solid var(--bdr);padding:10px 14px 12px;background:var(--sur2)}
+.comm-lbl{font-size:9px;font-weight:700;text-transform:uppercase;letter-spacing:.09em;color:var(--t3);margin-bottom:6px}
+.comm-ta{width:100%;min-height:52px;background:var(--sur);border:1px solid var(--bdr2);border-radius:var(--rad);padding:7px 10px;font-size:11px;color:var(--t1);font-family:inherit;line-height:1.5;resize:vertical;outline:none;transition:border-color .12s}
+.comm-ta:focus{border-color:var(--acc)}
+.comm-ta::placeholder{color:var(--t3);font-style:italic}
+.comm-saved{font-size:9px;color:var(--t3);margin-top:4px;text-align:right;min-height:13px}
+
+/* RESPONSIVE */
+@media(max-width:1050px){.krow{grid-template-columns:repeat(3,1fr)}}
+@media(max-width:800px){.g2,.g31{grid-template-columns:1fr}}
+@media(max-width:560px){.krow{grid-template-columns:repeat(2,1fr)}.panel{padding:12px 12px 32px}.topbar{padding:0 12px}.tabnav{padding:0 12px}}
+</style>
+
+<header class="topbar">
+  <div class="org">Scientific Software &amp; Systems<span class="sep">|</span><span class="tag">Finance</span></div>
+  <div class="topbar-r">
+    <span><span class="ldot"></span>Xero Connected</span>
+    <span>Refreshed 24 Jul 2026, 04:02 NZST</span>
+    <span>All figures NZD</span>
+  </div>
+</header>
+
+<nav class="tabnav">
+  <button class="tab" data-p="daily">Daily</button>
+  <button class="tab on" data-p="weekly">Weekly</button>
+  <button class="tab" data-p="monthly">Monthly</button>
+  <button class="tab" data-p="quarterly">Quarterly</button>
+  <button class="tab" data-p="cashflow">13-Week CF</button>
+</nav>
+
+<!-- ══════════════════════════════════════════════════════════════
+     DAILY
+══════════════════════════════════════════════════════════════════ -->
+<div class="panel" id="p-daily">
+  <div class="pbar">
+    <span class="plbl">25 July 2026 — Daily Snapshot</span>
+    <span class="pnote">Balance sheet as at today · P&amp;L not applicable to daily view</span>
+  </div>
+
+  <div class="krow">
+    <div class="kpi ok"><div class="kl">Bank Balance</div><div class="kv">$1,218,554</div><div class="ks">Working capital <span class="g">$190,318</span></div></div>
+    <div class="kpi crit"><div class="kl">Accounts Receivable</div><div class="kv">$495,442</div><div class="ks"><span class="r">$386,310</span> overdue (78%)</div></div>
+    <div class="kpi warn"><div class="kl">Accounts Payable</div><div class="kv">$1,282,388</div><div class="ks">Trade payables outstanding</div></div>
+    <div class="kpi neu"><div class="kl">Fixed Assets</div><div class="kv">$998,851</div><div class="ks">Non-current assets, net</div></div>
+    <div class="kpi neu"><div class="kl">Credit Cards</div><div class="kv dim">Current Assets</div><div class="ks">Included in other current assets</div></div>
+  </div>
+
+  <div class="g31">
+    <div class="card">
+      <div class="ch"><span class="ct">Accounts Receivable</span><span class="cv">$495,442</span></div>
+      <div class="cb">
+        <div class="stats">
+          <div class="s"><span class="sl">Outstanding</span><span class="sv">$495,442</span><span class="ss">61 invoices</span></div>
+          <div class="s"><span class="sl">Overdue</span><span class="sv r">$386,310</span><span class="ss">46 invoices</span></div>
+          <div class="s"><span class="sl">Current</span><span class="sv g">$109,132</span><span class="ss">15 invoices</span></div>
+          <div class="s"><span class="sl">Unapplied Credits</span><span class="sv">$2.92</span><span class="ss">&nbsp;</span></div>
+        </div>
+        <div class="age-track">
+          <div class="age-seg" style="width:22%;background:var(--g)"></div>
+          <div class="age-seg" style="width:78%;background:var(--r)"></div>
+        </div>
+        <div class="age-leg">
+          <div class="age-item"><div class="age-dot" style="background:var(--g)"></div>Current $109,132 (22%)</div>
+          <div class="age-item"><div class="age-dot" style="background:var(--r)"></div>Overdue $386,310 (78%)</div>
+        </div>
+        <table>
+          <thead><tr><th>Invoice</th><th>Customer</th><th>Amount</th><th>Due Date</th><th>Status</th></tr></thead>
+          <tbody>
+            <tr><td>INV-1696</td><td>Bank of New Zealand</td><td>$91,453</td><td>20 Jul 2026</td><td><span class="badge br">5d overdue</span></td></tr>
+            <tr><td>INV-1751</td><td>Ministry of Education</td><td>$83,771</td><td>21 Jul 2026</td><td><span class="badge br">4d overdue</span></td></tr>
+            <tr><td>INV-1763</td><td>Sime Darby Motors NZ</td><td>$33,708</td><td>9 Aug 2026</td><td><span class="badge bg">Due in 15d</span></td></tr>
+            <tr><td style="color:var(--t3);font-size:10px" colspan="2">58 further invoices</td><td>$286,510</td><td>—</td><td><span class="badge bn">Mixed</span></td></tr>
+          </tbody>
+        </table>
+      </div>
+    </div>
+
+    <div class="rows">
+      <div class="card">
+        <div class="ch"><span class="ct">Bank Balance</span><span class="cv">$1,218,554</span></div>
+        <div class="cb">
+          <div class="irow"><span class="il">Cash &amp; equivalents</span><span class="iv">$1,218,554</span></div>
+          <div class="irow"><span class="il">Working capital</span><span class="iv" style="color:var(--g)">$190,318</span></div>
+          <div class="irow"><span class="il">Net equity</span><span class="iv">$286,291</span></div>
+          <div class="irow"><span class="il">Total assets</span><span class="iv">$4,128,894</span></div>
+        </div>
+      </div>
+      <div class="card">
+        <div class="ch"><span class="ct">Accounts Payable</span><span class="cv">$1,282,388</span></div>
+        <div class="cb">
+          <div class="irow"><span class="il">Trade payables</span><span class="iv" style="color:var(--a)">$1,282,388</span></div>
+          <div class="irow"><span class="il">Total current liabilities</span><span class="iv">$2,939,725</span></div>
+          <div class="irow"><span class="il">Non-current liabilities</span><span class="iv">$902,878</span></div>
+          <div class="div" style="margin:8px 0 8px"></div>
+          <div class="notice" style="font-size:10px">AP aging breakdown not available via current Xero integration. Current liabilities include accruals, deferred revenue &amp; tax.</div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <div class="gap"></div>
+
+  <div class="g2">
+    <div class="card">
+      <div class="ch"><span class="ct">Fixed Assets</span><span class="cv">$998,851</span></div>
+      <div class="cb">
+        <div class="irow"><span class="il">Non-current assets (net)</span><span class="iv">$998,851</span></div>
+        <div class="div" style="margin:8px 0 8px"></div>
+        <div class="notice" style="font-size:10px">Includes PP&amp;E, right-of-use assets (IFRS 16) and internally developed IP. Full register at <strong>Xero → Fixed Assets</strong>.</div>
+      </div>
+    </div>
+    <div class="card">
+      <div class="ch"><span class="ct">Credit Card Balances</span><span class="cv">Current Assets</span></div>
+      <div class="cb">
+        <div class="irow"><span class="il">Other current assets (total)</span><span class="iv">$1,911,489</span></div>
+        <div class="div" style="margin:8px 0 8px"></div>
+        <div class="notice" style="font-size:10px">Credit card accounts sit within <strong>other current assets</strong> ($1,911,489) on the balance sheet alongside AR and prepayments. Individual card balances are not broken out by the current Xero MCP — view at <strong>Xero → Accounting → Bank Accounts</strong>.</div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- ══════════════════════════════════════════════════════════════
+     WEEKLY
+══════════════════════════════════════════════════════════════════ -->
+<div class="panel on" id="p-weekly">
+  <div class="pbar">
+    <span class="plbl">Week of 19 – 25 July 2026</span>
+    <span class="pnote">Balance sheet as at 25 Jul · P&amp;L for 7-day period · Accrual basis</span>
+  </div>
+
+  <div class="krow">
+    <div class="kpi ok"><div class="kl">Bank Balance</div><div class="kv">$1,218,554</div><div class="ks">Working capital <span class="g">$190,318</span></div></div>
+    <div class="kpi crit"><div class="kl">Accounts Receivable</div><div class="kv">$495,442</div><div class="ks"><span class="r">$386,310</span> overdue · 46 inv</div></div>
+    <div class="kpi warn"><div class="kl">Accounts Payable</div><div class="kv">$1,282,388</div><div class="ks">Trade payables outstanding</div></div>
+    <div class="kpi neu"><div class="kl">Fixed Assets</div><div class="kv">$998,851</div><div class="ks">Non-current assets, net</div></div>
+    <div class="kpi neu"><div class="kl">Credit Cards</div><div class="kv dim">Current Assets</div><div class="ks">Included in other current assets</div></div>
+  </div>
+
+  <div class="g31">
+    <div class="card">
+      <div class="ch"><span class="ct">Accounts Receivable</span><span class="cv">$495,442</span></div>
+      <div class="cb">
+        <div class="stats">
+          <div class="s"><span class="sl">Outstanding</span><span class="sv">$495,442</span><span class="ss">61 invoices</span></div>
+          <div class="s"><span class="sl">Overdue</span><span class="sv r">$386,310</span><span class="ss">46 invoices (78%)</span></div>
+          <div class="s"><span class="sl">Current</span><span class="sv g">$109,132</span><span class="ss">15 invoices (22%)</span></div>
+        </div>
+        <div class="age-track">
+          <div class="age-seg" style="width:22%;background:var(--g)"></div>
+          <div class="age-seg" style="width:78%;background:var(--r)"></div>
+        </div>
+        <div class="age-leg">
+          <div class="age-item"><div class="age-dot" style="background:var(--g)"></div>Current $109,132 (22%)</div>
+          <div class="age-item"><div class="age-dot" style="background:var(--r)"></div>Overdue $386,310 (78%)</div>
+        </div>
+        <table>
+          <thead><tr><th>Invoice</th><th>Customer</th><th>Amount</th><th>Due</th><th>Status</th></tr></thead>
+          <tbody>
+            <tr><td>INV-1696</td><td>Bank of New Zealand</td><td>$91,453</td><td>20 Jul</td><td><span class="badge br">5d overdue</span></td></tr>
+            <tr><td>INV-1751</td><td>Ministry of Education</td><td>$83,771</td><td>21 Jul</td><td><span class="badge br">4d overdue</span></td></tr>
+            <tr><td>INV-1763</td><td>Sime Darby Motors NZ</td><td>$33,708</td><td>9 Aug</td><td><span class="badge bg">15d remaining</span></td></tr>
+            <tr><td style="color:var(--t3);font-size:10px" colspan="2">58 further invoices</td><td>$286,510</td><td>—</td><td><span class="badge bn">Mixed</span></td></tr>
+          </tbody>
+        </table>
+      </div>
+    </div>
+
+    <div class="card">
+      <div class="ch"><span class="ct">P&amp;L — Week 19–25 Jul</span><span class="cv r">–$259,843</span></div>
+      <div class="cb">
+        <div class="pr"><span class="pl">Revenue</span><span class="pv">$53,895</span></div>
+        <div class="pr ind"><span class="pl">CIS Software License</span><span class="pv">$43,325</span></div>
+        <div class="pr ind"><span class="pl">Managed Services Impl.</span><span class="pv">$6,720</span></div>
+        <div class="pr ind"><span class="pl">Subcontract Income</span><span class="pv">$3,850</span></div>
+        <div class="pr"><span class="pl">Cost of Sales</span><span class="pv r">(243,772)</span></div>
+        <div class="pr h"><span class="pl">Gross Profit</span><span class="pv r">(189,877)</span></div>
+        <div class="pr"><span class="pl">Operating Expenses</span><span class="pv r">(69,966)</span></div>
+        <div class="pr h"><span class="pl">Net Profit</span><span class="pv r">(259,843)</span></div>
+        <div class="div"></div>
+        <div class="notice" style="font-size:10px">Weekly COGS ($243k) reflects payroll timing — salary &amp; commission runs fell this period. Monthly view gives a truer margin picture.</div>
+      </div>
+    </div>
+  </div>
+
+  <div class="gap"></div>
+
+  <div class="g2">
+    <div class="card">
+      <div class="ch"><span class="ct">Bank Balance</span><span class="cv">$1,218,554</span></div>
+      <div class="cb">
+        <div class="irow"><span class="il">Cash &amp; equivalents</span><span class="iv">$1,218,554</span></div>
+        <div class="irow"><span class="il">Working capital</span><span class="iv" style="color:var(--g)">$190,318</span></div>
+        <div class="irow"><span class="il">Net equity</span><span class="iv">$286,291</span></div>
+        <div class="irow"><span class="il">Total assets</span><span class="iv">$4,128,894</span></div>
+        <div class="irow"><span class="il">Total liabilities</span><span class="iv">$3,842,603</span></div>
+      </div>
+    </div>
+    <div class="card">
+      <div class="ch"><span class="ct">Accounts Payable</span><span class="cv">$1,282,388</span></div>
+      <div class="cb">
+        <div class="irow"><span class="il">Trade payables</span><span class="iv" style="color:var(--a)">$1,282,388</span></div>
+        <div class="irow"><span class="il">Total current liabilities</span><span class="iv">$2,939,725</span></div>
+        <div class="irow"><span class="il">Non-current liabilities</span><span class="iv">$902,878</span></div>
+      </div>
+    </div>
+  </div>
+
+  <div class="gap"></div>
+
+  <div class="g2">
+    <div class="card">
+      <div class="ch"><span class="ct">Fixed Assets</span><span class="cv">$998,851</span></div>
+      <div class="cb">
+        <div class="irow"><span class="il">Non-current assets (net)</span><span class="iv">$998,851</span></div>
+        <div class="div" style="margin:8px 0 8px"></div>
+        <div class="notice" style="font-size:10px">Includes PP&amp;E, right-of-use assets (IFRS 16) and internally developed IP. Asset register at <strong>Xero → Fixed Assets</strong>.</div>
+      </div>
+    </div>
+    <div class="card">
+      <div class="ch"><span class="ct">Credit Card Balances</span><span class="cv">Current Assets</span></div>
+      <div class="cb">
+        <div class="irow"><span class="il">Other current assets (total)</span><span class="iv">$1,911,489</span></div>
+        <div class="div" style="margin:8px 0 8px"></div>
+        <div class="notice" style="font-size:10px">Credit card accounts sit within <strong>other current assets</strong> ($1,911,489) on the balance sheet alongside AR and prepayments. Individual card balances are not broken out by the current Xero MCP — view at <strong>Xero → Accounting → Bank Accounts</strong>.</div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- ══════════════════════════════════════════════════════════════
+     MONTHLY
+══════════════════════════════════════════════════════════════════ -->
+<div class="panel" id="p-monthly">
+  <div class="pbar">
+    <span class="plbl">July 2026 — Month to Date (1–25 Jul, 25 of 31 days)</span>
+    <span class="pnote">Balance sheet as at 25 Jul · Accrual basis</span>
+  </div>
+
+  <div class="krow">
+    <div class="kpi ok"><div class="kl">Bank Balance</div><div class="kv">$1,218,554</div><div class="ks">Working capital <span class="g">$190,318</span></div></div>
+    <div class="kpi crit"><div class="kl">Accounts Receivable</div><div class="kv">$495,442</div><div class="ks"><span class="r">$386,310</span> overdue · 46 inv</div></div>
+    <div class="kpi warn"><div class="kl">Accounts Payable</div><div class="kv">$1,282,388</div><div class="ks">Trade payables outstanding</div></div>
+    <div class="kpi neu"><div class="kl">Fixed Assets</div><div class="kv">$998,851</div><div class="ks">Non-current assets, net</div></div>
+    <div class="kpi neu"><div class="kl">Credit Cards</div><div class="kv dim">Current Assets</div><div class="ks">Included in other current assets</div></div>
+  </div>
+
+  <div class="g31">
+    <div class="card">
+      <div class="ch"><span class="ct">Accounts Receivable</span><span class="cv">$495,442</span></div>
+      <div class="cb">
+        <div class="stats">
+          <div class="s"><span class="sl">Outstanding</span><span class="sv">$495,442</span><span class="ss">61 invoices</span></div>
+          <div class="s"><span class="sl">Overdue</span><span class="sv r">$386,310</span><span class="ss">46 invoices (78%)</span></div>
+          <div class="s"><span class="sl">Current</span><span class="sv g">$109,132</span><span class="ss">15 invoices (22%)</span></div>
+        </div>
+        <div class="age-track">
+          <div class="age-seg" style="width:22%;background:var(--g)"></div>
+          <div class="age-seg" style="width:78%;background:var(--r)"></div>
+        </div>
+        <div class="age-leg">
+          <div class="age-item"><div class="age-dot" style="background:var(--g)"></div>Current (22%)</div>
+          <div class="age-item"><div class="age-dot" style="background:var(--r)"></div>Overdue (78%)</div>
+        </div>
+        <table>
+          <thead><tr><th>Invoice</th><th>Customer</th><th>Amount</th><th>Due</th><th>Status</th></tr></thead>
+          <tbody>
+            <tr><td>INV-1696</td><td>Bank of New Zealand</td><td>$91,453</td><td>20 Jul</td><td><span class="badge br">5d overdue</span></td></tr>
+            <tr><td>INV-1751</td><td>Ministry of Education</td><td>$83,771</td><td>21 Jul</td><td><span class="badge br">4d overdue</span></td></tr>
+            <tr><td>INV-1763</td><td>Sime Darby Motors NZ</td><td>$33,708</td><td>9 Aug</td><td><span class="badge bg">15d remaining</span></td></tr>
+            <tr><td style="color:var(--t3);font-size:10px" colspan="2">58 further invoices</td><td>$286,510</td><td>—</td><td><span class="badge bn">Mixed</span></td></tr>
+          </tbody>
+        </table>
+      </div>
+    </div>
+
+    <div class="card">
+      <div class="ch"><span class="ct">P&amp;L — Jul MTD</span><span class="cv r">–$129,198</span></div>
+      <div class="cb">
+        <div class="pr"><span class="pl">Revenue</span><span class="pv">$322,818</span></div>
+        <div class="pr"><span class="pl">Cost of Sales</span><span class="pv r">(225,628)</span></div>
+        <div class="pr h"><span class="pl">Gross Profit</span><span class="pv">$97,190</span></div>
+        <div class="pr note"><span class="pl">Gross margin</span><span class="pv">30.1%</span></div>
+        <div class="pr"><span class="pl">Operating Expenses</span><span class="pv r">(226,387)</span></div>
+        <div class="pr h"><span class="pl">Net Profit</span><span class="pv r">(129,198)</span></div>
+        <div class="div"></div>
+        <div class="pr note"><span class="pl">Accountancy credit (one-off)</span><span class="pv">(22,892)</span></div>
+        <div class="notice" style="font-size:10px;margin-top:10px">Expenses include a $22,892 accountancy fee credit this month, distorting OpEx upward net of credit.</div>
+      </div>
+    </div>
+  </div>
+
+  <div class="gap"></div>
+
+  <!-- Revenue breakdown - full width -->
+  <div class="card">
+    <div class="ch"><span class="ct">Revenue by Stream — Jul MTD</span><span class="cv">$322,818</span></div>
+    <div class="cb">
+      <div class="hbar"><div class="hbar-row"><span class="hbar-name">MRR – Managed Security Services</span><span class="hbar-amt">$155,388<span class="hbar-pct">48.1%</span></span></div><div class="hbar-track"><div class="hbar-fill" style="width:48.1%"></div></div></div>
+      <div class="hbar"><div class="hbar-row"><span class="hbar-name">CIS – Recurring Software License</span><span class="hbar-amt">$123,163<span class="hbar-pct">38.1%</span></span></div><div class="hbar-track"><div class="hbar-fill" style="width:38.1%"></div></div></div>
+      <div class="hbar"><div class="hbar-row"><span class="hbar-name">MRR – Support Contracts</span><span class="hbar-amt">$29,443<span class="hbar-pct">9.1%</span></span></div><div class="hbar-track"><div class="hbar-fill" style="width:9.1%"></div></div></div>
+      <div class="hbar"><div class="hbar-row"><span class="hbar-name">CIS Recurring Hardware</span><span class="hbar-amt">$8,411<span class="hbar-pct">2.6%</span></span></div><div class="hbar-track"><div class="hbar-fill" style="width:2.6%"></div></div></div>
+      <div class="hbar"><div class="hbar-row"><span class="hbar-name">Professional Services &amp; Advisory</span><span class="hbar-amt">$5,520<span class="hbar-pct">1.7%</span></span></div><div class="hbar-track"><div class="hbar-fill" style="width:1.7%"></div></div></div>
+      <div class="hbar"><div class="hbar-row"><span class="hbar-name">MRR – vISC and vCISO</span><span class="hbar-amt">$4,320<span class="hbar-pct">1.3%</span></span></div><div class="hbar-track"><div class="hbar-fill" style="width:1.3%"></div></div></div>
+      <div class="hbar"><div class="hbar-row"><span class="hbar-name">Managed Services Implementations</span><span class="hbar-amt">$2,004<span class="hbar-pct">0.6%</span></span></div><div class="hbar-track"><div class="hbar-fill" style="width:0.6%"></div></div></div>
+      <div class="notice" style="font-size:10px;margin-top:4px">Overage credits (–$5,988) netted into revenue total. MRR lines (Security + Support + vISC) represent <strong>58.5% of revenue</strong>.</div>
+    </div>
+  </div>
+
+  <div class="gap"></div>
+
+  <div class="g2">
+    <div class="card">
+      <div class="ch"><span class="ct">Bank Balance</span><span class="cv">$1,218,554</span></div>
+      <div class="cb">
+        <div class="irow"><span class="il">Cash &amp; equivalents</span><span class="iv">$1,218,554</span></div>
+        <div class="irow"><span class="il">Working capital</span><span class="iv" style="color:var(--g)">$190,318</span></div>
+        <div class="irow"><span class="il">Net equity</span><span class="iv">$286,291</span></div>
+        <div class="irow"><span class="il">Total assets</span><span class="iv">$4,128,894</span></div>
+        <div class="irow"><span class="il">Total liabilities</span><span class="iv">$3,842,603</span></div>
+      </div>
+    </div>
+    <div class="card">
+      <div class="ch"><span class="ct">Accounts Payable</span><span class="cv">$1,282,388</span></div>
+      <div class="cb">
+        <div class="irow"><span class="il">Trade payables</span><span class="iv" style="color:var(--a)">$1,282,388</span></div>
+        <div class="irow"><span class="il">Total current liabilities</span><span class="iv">$2,939,725</span></div>
+        <div class="irow"><span class="il">Non-current liabilities</span><span class="iv">$902,878</span></div>
+      </div>
+    </div>
+  </div>
+
+  <div class="gap"></div>
+
+  <div class="g2">
+    <div class="card">
+      <div class="ch"><span class="ct">Fixed Assets</span><span class="cv">$998,851</span></div>
+      <div class="cb">
+        <div class="irow"><span class="il">Non-current assets (net)</span><span class="iv">$998,851</span></div>
+        <div class="div" style="margin:8px 0 8px"></div>
+        <div class="notice" style="font-size:10px">Includes PP&amp;E, right-of-use assets (IFRS 16) and internally developed IP. Amortisation accounts active for PKI SaaS, C-RMaaS, E-Mail Security, Threat Disruption. Register at <strong>Xero → Fixed Assets</strong>.</div>
+      </div>
+    </div>
+    <div class="card">
+      <div class="ch"><span class="ct">Credit Card Balances</span><span class="cv">Current Assets</span></div>
+      <div class="cb">
+        <div class="irow"><span class="il">Other current assets (total)</span><span class="iv">$1,911,489</span></div>
+        <div class="div" style="margin:8px 0 8px"></div>
+        <div class="notice" style="font-size:10px">Credit card accounts sit within <strong>other current assets</strong> ($1,911,489) on the balance sheet alongside AR and prepayments. Individual card balances are not broken out by the current Xero MCP — view at <strong>Xero → Accounting → Bank Accounts</strong>.</div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- ══════════════════════════════════════════════════════════════
+     QUARTERLY
+══════════════════════════════════════════════════════════════════ -->
+<div class="panel" id="p-quarterly">
+  <div class="pbar">
+    <span class="plbl">Q1 FY2027 — 1 Jul to 25 Jul 2026 (25 of 92 days)</span>
+    <span class="pnote">Prior-quarter comparison not available · Balance sheet as at 25 Jul</span>
+  </div>
+
+  <div class="krow">
+    <div class="kpi ok"><div class="kl">Bank Balance</div><div class="kv">$1,218,554</div><div class="ks">Working capital <span class="g">$190,318</span></div></div>
+    <div class="kpi crit"><div class="kl">Accounts Receivable</div><div class="kv">$495,442</div><div class="ks"><span class="r">$386,310</span> overdue · 78%</div></div>
+    <div class="kpi warn"><div class="kl">Accounts Payable</div><div class="kv">$1,282,388</div><div class="ks">Trade payables outstanding</div></div>
+    <div class="kpi neu"><div class="kl">Fixed Assets</div><div class="kv">$998,851</div><div class="ks">Non-current assets, net</div></div>
+    <div class="kpi neu"><div class="kl">Credit Cards</div><div class="kv dim">Current Assets</div><div class="ks">Included in other current assets</div></div>
+  </div>
+
+  <!-- Quarter progress -->
+  <div class="card" style="margin-bottom:12px">
+    <div class="cb" style="padding:12px 14px">
+      <div style="display:flex;justify-content:space-between;margin-bottom:5px">
+        <span style="font-size:11px;color:var(--t2);font-weight:600">Q1 FY2027 Progress</span>
+        <span style="font-size:11px;color:var(--t3)">25 of 92 days — 27% complete · 67 days remaining</span>
+      </div>
+      <div class="qtrack"><div class="qfill" style="width:27.2%"></div></div>
+      <div class="qmeta">1 Jul 2026 → 30 Sep 2026</div>
+    </div>
+  </div>
+
+  <div class="g31">
+    <div class="card">
+      <div class="ch"><span class="ct">Accounts Receivable — Q1 Opening</span><span class="cv">$495,442</span></div>
+      <div class="cb">
+        <div class="stats">
+          <div class="s"><span class="sl">Outstanding</span><span class="sv">$495,442</span><span class="ss">61 invoices</span></div>
+          <div class="s"><span class="sl">Overdue</span><span class="sv r">$386,310</span><span class="ss">46 inv · 78%</span></div>
+          <div class="s"><span class="sl">Current</span><span class="sv g">$109,132</span><span class="ss">15 inv · 22%</span></div>
+        </div>
+        <div class="age-track">
+          <div class="age-seg" style="width:22%;background:var(--g)"></div>
+          <div class="age-seg" style="width:78%;background:var(--r)"></div>
+        </div>
+        <div class="age-leg">
+          <div class="age-item"><div class="age-dot" style="background:var(--g)"></div>Current 22%</div>
+          <div class="age-item"><div class="age-dot" style="background:var(--r)"></div>Overdue 78%</div>
+        </div>
+        <table>
+          <thead><tr><th>Invoice</th><th>Customer</th><th>Amount</th><th>Due</th><th>Status</th></tr></thead>
+          <tbody>
+            <tr><td>INV-1696</td><td>Bank of New Zealand</td><td>$91,453</td><td>20 Jul</td><td><span class="badge br">5d overdue</span></td></tr>
+            <tr><td>INV-1751</td><td>Ministry of Education</td><td>$83,771</td><td>21 Jul</td><td><span class="badge br">4d overdue</span></td></tr>
+            <tr><td>INV-1763</td><td>Sime Darby Motors NZ</td><td>$33,708</td><td>9 Aug</td><td><span class="badge bg">15d remaining</span></td></tr>
+            <tr><td style="color:var(--t3);font-size:10px" colspan="2">58 further invoices</td><td>$286,510</td><td>—</td><td><span class="badge bn">Mixed</span></td></tr>
+          </tbody>
+        </table>
+      </div>
+    </div>
+
+    <div class="rows">
+      <div class="card">
+        <div class="ch"><span class="ct">P&amp;L — Q1 FY2027 to Date</span><span class="cv r">–$129,198</span></div>
+        <div class="cb">
+          <div class="pr"><span class="pl">Revenue (25 days)</span><span class="pv">$322,818</span></div>
+          <div class="pr"><span class="pl">Cost of Sales</span><span class="pv r">(225,628)</span></div>
+          <div class="pr h"><span class="pl">Gross Profit</span><span class="pv">$97,190</span></div>
+          <div class="pr note"><span class="pl">Gross margin</span><span class="pv">30.1%</span></div>
+          <div class="pr"><span class="pl">Operating Expenses</span><span class="pv r">(226,387)</span></div>
+          <div class="pr h"><span class="pl">Net Profit</span><span class="pv r">(129,198)</span></div>
+          <div class="div"></div>
+          <div class="pr note"><span class="pl">Revenue run-rate (annualised)</span><span class="pv">~$4.73M</span></div>
+          <div class="pr note"><span class="pl">MRR share of revenue</span><span class="pv">58.5%</span></div>
+        </div>
+      </div>
+      <div class="card">
+        <div class="ch"><span class="ct">Balance Sheet</span></div>
+        <div class="cb">
+          <div class="irow"><span class="il">Total assets</span><span class="iv">$4,128,894</span></div>
+          <div class="irow"><span class="il">Total liabilities</span><span class="iv">$3,842,603</span></div>
+          <div class="irow"><span class="il">Net equity</span><span class="iv">$286,291</span></div>
+          <div class="irow"><span class="il">Working capital</span><span class="iv" style="color:var(--g)">$190,318</span></div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <div class="gap"></div>
+
+  <div class="g2">
+    <div class="card">
+      <div class="ch"><span class="ct">Bank Balance</span><span class="cv">$1,218,554</span></div>
+      <div class="cb">
+        <div class="irow"><span class="il">Cash &amp; equivalents</span><span class="iv">$1,218,554</span></div>
+        <div class="irow"><span class="il">Working capital</span><span class="iv" style="color:var(--g)">$190,318</span></div>
+        <div class="irow"><span class="il">Net equity</span><span class="iv">$286,291</span></div>
+        <div class="irow"><span class="il">Non-current liabilities</span><span class="iv">$902,878</span></div>
+      </div>
+    </div>
+    <div class="card">
+      <div class="ch"><span class="ct">Accounts Payable</span><span class="cv">$1,282,388</span></div>
+      <div class="cb">
+        <div class="irow"><span class="il">Trade payables</span><span class="iv" style="color:var(--a)">$1,282,388</span></div>
+        <div class="irow"><span class="il">Total current liabilities</span><span class="iv">$2,939,725</span></div>
+        <div class="irow"><span class="il">Non-current liabilities</span><span class="iv">$902,878</span></div>
+      </div>
+    </div>
+  </div>
+
+  <div class="gap"></div>
+
+  <div class="g2">
+    <div class="card">
+      <div class="ch"><span class="ct">Fixed Assets</span><span class="cv">$998,851</span></div>
+      <div class="cb">
+        <div class="irow"><span class="il">Non-current assets (net)</span><span class="iv">$998,851</span></div>
+        <div class="div" style="margin:8px 0 8px"></div>
+        <div class="notice" style="font-size:10px">Includes PP&amp;E, right-of-use assets (IFRS 16) and internally developed IP. Full register at <strong>Xero → Fixed Assets</strong>.</div>
+      </div>
+    </div>
+    <div class="card">
+      <div class="ch"><span class="ct">Credit Card Balances</span><span class="cv">Current Assets</span></div>
+      <div class="cb">
+        <div class="irow"><span class="il">Other current assets (total)</span><span class="iv">$1,911,489</span></div>
+        <div class="div" style="margin:8px 0 8px"></div>
+        <div class="notice" style="font-size:10px">Credit card accounts sit within <strong>other current assets</strong> ($1,911,489) on the balance sheet alongside AR and prepayments. Individual card balances are not broken out by the current Xero MCP — view at <strong>Xero → Accounting → Bank Accounts</strong>.</div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- ══════════════════════════════════════════════════════════════
+     13-WEEK CASH FLOW
+══════════════════════════════════════════════════════════════════ -->
+<div class="panel" id="p-cashflow">
+  <div class="pbar">
+    <span class="plbl">13-Week Rolling Cash Flow Forecast — 28 Jul to 24 Oct 2026</span>
+    <span class="pnote">Seeded from live Xero data · Forward projection, not actuals · NZD</span>
+  </div>
+
+  <div class="krow">
+    <div class="kpi ok"><div class="kl">Opening Cash</div><div class="kv">$1,218,554</div><div class="ks">Balance as at 25 Jul 2026</div></div>
+    <div class="kpi neu"><div class="kl">13W Total Inflows</div><div class="kv">$2,065,000</div><div class="ks">Collections + new billing</div></div>
+    <div class="kpi warn"><div class="kl">13W Total Outflows</div><div class="kv">$2,740,000</div><div class="ks">Payroll + AP + OpEx</div></div>
+    <div class="kpi crit"><div class="kl">Net Drawdown</div><div class="kv">–$675,000</div><div class="ks">Cash consumed over 13 weeks</div></div>
+    <div class="kpi warn"><div class="kl">Week 13 Balance</div><div class="kv">$543,554</div><div class="ks">Forecast close 24 Oct 2026</div></div>
+  </div>
+
+  <div class="card" style="margin-bottom:12px">
+    <div class="ch">
+      <span class="ct">Cash Balance Trajectory</span>
+      <span style="font-size:10px;color:var(--t3)">Low: $543,554 (W13) · Balance remains positive throughout</span>
+    </div>
+    <div class="cb" style="padding:10px 8px 6px"><div id="cf-bal-svg"></div></div>
+  </div>
+
+  <div class="card" style="margin-bottom:12px">
+    <div class="ch">
+      <span class="ct">Weekly Net Cash Flow</span>
+      <span style="font-size:10px;color:var(--t3)">12 outflow weeks · 1 inflow week (W12 +$34k)</span>
+    </div>
+    <div class="cb" style="padding:10px 8px 6px"><div id="cf-net-svg"></div></div>
+  </div>
+
+  <div class="card">
+    <div class="ch"><span class="ct">Week-by-Week Detail</span></div>
+    <div class="cb" style="padding:0;overflow-x:auto">
+      <table>
+        <thead><tr>
+          <th>Wk</th>
+          <th style="text-align:left;min-width:120px">Period</th>
+          <th>Opening</th><th>Inflows</th><th>Outflows</th><th>Net</th><th>Closing</th>
+        </tr></thead>
+        <tbody>
+          <tr><td>W1</td><td style="text-align:left">28 Jul–1 Aug</td><td>$1,218,554</td><td>$235,000</td><td>$298,000</td><td style="color:var(--r)">–$63,000</td><td>$1,155,554</td></tr>
+          <tr><td>W2</td><td style="text-align:left">4–8 Aug</td><td>$1,155,554</td><td>$165,000</td><td>$218,000</td><td style="color:var(--r)">–$53,000</td><td>$1,102,554</td></tr>
+          <tr><td>W3</td><td style="text-align:left">11–15 Aug</td><td>$1,102,554</td><td>$148,000</td><td>$286,000</td><td style="color:var(--r)">–$138,000</td><td>$964,554</td></tr>
+          <tr><td>W4</td><td style="text-align:left">18–22 Aug</td><td>$964,554</td><td>$142,000</td><td>$158,000</td><td style="color:var(--r)">–$16,000</td><td>$948,554</td></tr>
+          <tr><td>W5</td><td style="text-align:left">25–29 Aug</td><td>$948,554</td><td>$185,000</td><td>$244,000</td><td style="color:var(--r)">–$59,000</td><td>$889,554</td></tr>
+          <tr><td>W6</td><td style="text-align:left">1–5 Sep</td><td>$889,554</td><td>$128,000</td><td>$208,000</td><td style="color:var(--r)">–$80,000</td><td>$809,554</td></tr>
+          <tr><td>W7</td><td style="text-align:left">8–12 Sep</td><td>$809,554</td><td>$135,000</td><td>$216,000</td><td style="color:var(--r)">–$81,000</td><td>$728,554</td></tr>
+          <tr><td>W8</td><td style="text-align:left">15–19 Sep</td><td>$728,554</td><td>$142,000</td><td>$158,000</td><td style="color:var(--r)">–$16,000</td><td>$712,554</td></tr>
+          <tr><td>W9</td><td style="text-align:left">22–26 Sep</td><td>$712,554</td><td>$168,000</td><td>$212,000</td><td style="color:var(--r)">–$44,000</td><td>$668,554</td></tr>
+          <tr><td>W10</td><td style="text-align:left">29 Sep–3 Oct</td><td>$668,554</td><td>$132,000</td><td>$148,000</td><td style="color:var(--r)">–$16,000</td><td>$652,554</td></tr>
+          <tr><td>W11</td><td style="text-align:left">6–10 Oct</td><td>$652,554</td><td>$145,000</td><td>$218,000</td><td style="color:var(--r)">–$73,000</td><td>$579,554</td></tr>
+          <tr><td>W12</td><td style="text-align:left">13–17 Oct</td><td>$579,554</td><td>$192,000</td><td>$158,000</td><td style="color:var(--g)">+$34,000</td><td>$613,554</td></tr>
+          <tr><td>W13</td><td style="text-align:left">20–24 Oct</td><td>$613,554</td><td>$148,000</td><td>$218,000</td><td style="color:var(--r)">–$70,000</td><td>$543,554</td></tr>
+        </tbody>
+        <tfoot>
+          <tr>
+            <td colspan="2" style="text-align:left">13-Week Total</td>
+            <td>$1,218,554</td><td>$2,065,000</td><td>$2,740,000</td>
+            <td style="color:var(--r)">–$675,000</td><td>$543,554</td>
+          </tr>
+        </tfoot>
+      </table>
+    </div>
+    <div class="cb" style="border-top:1px solid var(--bdr);padding:10px 14px">
+      <div class="notice" style="font-size:10px"><strong>Model assumptions:</strong> Collections drawn from live AR ($495,442 as at 25 Jul); $386k overdue weighted to W1–W3; current AR ($109k) in W3–W5. New revenue at ~$74k/week (Jul MTD run-rate), cash-collected with a 4–5 week lag. Fortnightly payroll ~$108k per cycle (W1, W3, W5, W7, W9, W11, W13). Trade payables ($1,282,388 outstanding) drawn down over W1–W8. This is a forecast model — not actuals.</div>
+    </div>
+  </div>
+</div>
+
+<script>
+// 13-Week Cash Flow Charts
+(function(){
+  var bals=[1218554,1155554,1102554,964554,948554,889554,809554,728554,712554,668554,652554,579554,613554,543554];
+  var nets=[-63000,-53000,-138000,-16000,-59000,-80000,-81000,-16000,-44000,-16000,-73000,34000,-70000];
+  var wlbls=['Now','W1','W2','W3','W4','W5','W6','W7','W8','W9','W10','W11','W12','W13'];
+
+  function buildBal(){
+    var W=760,H=172,pL=60,pR=14,pT=16,pB=34,pw=W-pL-pR,ph=H-pT-pB,yMax=1400000;
+    function xp(i){return pL+(i/13)*pw;}
+    function yp(v){return pT+ph-((v/yMax)*ph);}
+    var area='M '+xp(0)+' '+yp(bals[0]);
+    for(var i=1;i<bals.length;i++) area+=' L '+xp(i)+' '+yp(bals[i]);
+    area+=' L '+xp(13)+' '+(pT+ph)+' L '+xp(0)+' '+(pT+ph)+' Z';
+    var line='M '+xp(0)+' '+yp(bals[0]);
+    for(var j=1;j<bals.length;j++) line+=' L '+xp(j)+' '+yp(bals[j]);
+    var grids='',ylbls='';
+    for(var g=200000;g<=1200000;g+=200000){
+      var gy=yp(g);
+      grids+='<line x1="'+pL+'" y1="'+gy+'" x2="'+(pL+pw)+'" y2="'+gy+'"/>';
+      ylbls+='<text x="'+(pL-5)+'" y="'+(gy+3.5)+'" text-anchor="end">$'+(g/1000)+'k</text>';
+    }
+    var dots='';
+    for(var k=0;k<bals.length;k++){
+      var col=k===0?'var(--acc)':(nets[k-1]>=0?'var(--g)':'var(--r)');
+      dots+='<circle cx="'+xp(k)+'" cy="'+yp(bals[k])+'" r="2.8" style="fill:'+col+'"/>';
+    }
+    var xlbls='';
+    for(var m=0;m<wlbls.length;m++) xlbls+='<text x="'+xp(m)+'" y="'+(pT+ph+16)+'" text-anchor="middle">'+wlbls[m]+'</text>';
+    return '<svg viewBox="0 0 '+W+' '+H+'" xmlns="http://www.w3.org/2000/svg" style="width:100%;display:block;overflow:visible">'+
+      '<style>line{stroke:var(--bdr);stroke-width:1;stroke-dasharray:3 3}text{fill:var(--t3);font:9px system-ui,sans-serif}</style>'+
+      grids+'<path d="'+area+'" style="fill:var(--acc);opacity:.1"/>'+
+      '<path d="'+line+'" style="fill:none;stroke:var(--acc);stroke-width:2"/>'+
+      dots+ylbls+xlbls+'</svg>';
+  }
+
+  function buildNet(){
+    var W=760,H=118,pL=60,pR=14,pT=12,pB=34,pw=W-pL-pR,ph=H-pT-pB;
+    var yMax=60000,yMin=-160000,yr=220000;
+    function yp(v){return pT+ph-((v-yMin)/yr)*ph;}
+    var zY=yp(0),bw=(pw/13)*0.52;
+    function xc(i){return pL+(i+0.5)*(pw/13);}
+    var bars='';
+    for(var i=0;i<nets.length;i++){
+      var n=nets[i],h=Math.abs(n)/yr*ph,by=n>=0?yp(n):zY,col=n>=0?'var(--g)':'var(--r)';
+      bars+='<rect x="'+(xc(i)-bw/2)+'" y="'+by+'" width="'+bw+'" height="'+h+'" style="fill:'+col+';opacity:.8" rx="1"/>';
+    }
+    var ylbls='';
+    [-100000,0].forEach(function(v){
+      ylbls+='<text x="'+(pL-5)+'" y="'+(yp(v)+3.5)+'" text-anchor="end">'+(v===0?'$0':'–$100k')+'</text>';
+    });
+    var xlbls='';
+    for(var j=0;j<nets.length;j++) xlbls+='<text x="'+xc(j)+'" y="'+(pT+ph+16)+'" text-anchor="middle">W'+(j+1)+'</text>';
+    return '<svg viewBox="0 0 '+W+' '+H+'" xmlns="http://www.w3.org/2000/svg" style="width:100%;display:block;overflow:visible">'+
+      '<style>line{stroke:var(--bdr);stroke-width:1;stroke-dasharray:3 3}text{fill:var(--t3);font:9px system-ui,sans-serif}</style>'+
+      '<line x1="'+pL+'" y1="'+yp(-100000)+'" x2="'+(pL+pw)+'" y2="'+yp(-100000)+'"/>'+
+      '<line x1="'+pL+'" y1="'+zY+'" x2="'+(pL+pw)+'" y2="'+zY+'" style="stroke:var(--bdr2);stroke-dasharray:none;stroke-width:1.5"/>'+
+      bars+ylbls+xlbls+'</svg>';
+  }
+
+  function render(){
+    var b=document.getElementById('cf-bal-svg');
+    var n=document.getElementById('cf-net-svg');
+    if(b) b.innerHTML=buildBal();
+    if(n) n.innerHTML=buildNet();
+  }
+  setTimeout(render,0);
+  new MutationObserver(render).observe(document.documentElement,{attributes:true,attributeFilter:['data-theme']});
+  window.matchMedia('(prefers-color-scheme:dark)').addEventListener('change',render);
+})();
+
+document.querySelectorAll('.tab').forEach(function(t){
+  t.addEventListener('click',function(){
+    document.querySelectorAll('.tab').forEach(function(x){x.classList.remove('on')});
+    document.querySelectorAll('.panel').forEach(function(x){x.classList.remove('on')});
+    t.classList.add('on');
+    document.getElementById('p-'+t.dataset.p).classList.add('on');
+  });
+});
+
+(function(){
+  var P='fdb_';
+  document.querySelectorAll('.panel').forEach(function(pnl){
+    pnl.querySelectorAll('.card').forEach(function(card,i){
+      var cb=card.querySelector('.cb');
+      if(!cb) return;
+      var cid=P+pnl.id+'_'+i;
+
+      var saved=null;
+      try{saved=JSON.parse(localStorage.getItem(cid));}catch(e){}
+
+      var comm=document.createElement('div');
+      comm.className='comm';
+      comm.innerHTML='<div class="comm-lbl">Commentary</div><textarea class="comm-ta" placeholder="Add notes or commentary for this section…"></textarea><div class="comm-saved"></div>';
+      card.appendChild(comm);
+
+      var ta=comm.querySelector('.comm-ta');
+      var meta=comm.querySelector('.comm-saved');
+      if(saved&&saved.text){ta.value=saved.text;meta.textContent='Saved '+saved.ts;}
+
+      var timer;
+      ta.addEventListener('input',function(){
+        clearTimeout(timer);
+        timer=setTimeout(function(){
+          var text=ta.value;
+          var d=new Date();
+          var ts=d.toLocaleDateString('en-NZ',{day:'2-digit',month:'short',year:'numeric'})+' '+d.toLocaleTimeString('en-NZ',{hour:'2-digit',minute:'2-digit'});
+          if(text.trim()){
+            try{localStorage.setItem(cid,JSON.stringify({text:text,ts:ts}));}catch(e){}
+            meta.textContent='Saved '+ts;
+          } else {
+            try{localStorage.removeItem(cid);}catch(e){}
+            meta.textContent='';
+          }
+        },700);
+      });
+    });
+  });
+})();
+</script>
